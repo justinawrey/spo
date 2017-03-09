@@ -7,7 +7,7 @@ pickle_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "mypickle
 
 # control commands to send for linux
 SEND_CMD_LINUX_PREV_SONG = "dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.Previous >/dev/null"
-SEND_CMD_LINUX_TOGGLE_SONG = "dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.Toggle >/dev/null"
+SEND_CMD_LINUX_TOGGLE_SONG = "dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.PlayPause >/dev/null"
 SEND_CMD_LINUX_NEXT_SONG = "dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.Next >/dev/null"
 
 def main():
