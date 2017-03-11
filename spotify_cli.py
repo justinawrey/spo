@@ -1,8 +1,8 @@
 import argparse
-import spotipy
 import os
 import pickle
 import dbus
+import time
 
 pickle_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "mypickle.pk")
 
@@ -21,7 +21,6 @@ def main():
     prev_tog_next.add_argument('-t', "--toggle", action="store_true", help="toggle current song")
     prev_tog_next.add_argument('-n', "--next", action="store_true", help="next song")
 
-    parser.add_argument('-q', "--show-queue", choices=["on", "off"], help="toggles viewing song queue")
     parser.add_argument('-v', "--verbose", choices=["on", "off"], help="toggles verbose song information")
     # End add arguments here
 
@@ -31,32 +30,41 @@ def main():
 
     # retrieve pickled toggle options data
     # if this is the first run through, skip this, as .pk file doesn't exist
-    toggle_options = {'show_queue': 'off', 'verbose': 'off'}
+    verbose_option = 'off'
     if os.path.exists(pickle_file):
         with open(pickle_file, 'rb') as _file:
-            toggle_options = pickle.load(_file)
+            verbose_option = pickle.load(_file)
 
-    # check if queue or verbose mode has been turned on
-    if args.show_queue:
-        toggle_options['show_queue'] = args.show_queue
+    # check if verbose mode has been turned on
     if args.verbose:
-        toggle_options['verbose'] = args.verbose
+        verbose_option = args.verbose
 
     # pickle the config data to a .pk file in local dir
     with open(pickle_file, 'wb+') as _file:
-        pickle.dump(toggle_options, _file)
+        pickle.dump(verbose_option, _file)
 
-    # set up dbus and
-    # send any control commands inputted by user
+    # set up dbus and relevant ctl/property interfaces
     player = dbus.SessionBus().get_object(DBUS_BUS_NAME_SPOTIFY, DBUS_OBJECT_PATH)
     ctl_interface = dbus.Interface(player, dbus_interface="org.mpris.MediaPlayer2.Player")
+    property_interface = dbus.Interface(player, dbus_interface='org.freedesktop.DBus.Properties')
 
+    # send any control commands inputted by user
     if args.prev:
         ctl_interface.Previous()
     elif args.toggle:
         ctl_interface.PlayPause()
     elif args.next:
         ctl_interface.Next()
+
+    # add a small delay so dbus retrieves the correct information in the event
+    # that the song was just switched
+    time.sleep(0.1)
+
+    track_metadata = property_interface.Get('org.mpris.MediaPlayer2.Player', 'Metadata')
+    print("Song:\t" + track_metadata['xesam:title'] if 'xesam:title' in track_metadata else 'Unknown')
+    if verbose_option == 'on':
+        print("Artist:\t" + track_metadata['xesam:artist'][0] if 'xesam:artist' in track_metadata else 'Unknown')
+        print("Album:\t" + track_metadata['xesam:album'] if 'xesam:album' in track_metadata else 'Unknown')
 
 if __name__ == "__main__":
     main()
