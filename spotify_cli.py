@@ -2,17 +2,17 @@ import argparse
 import spotipy
 import os
 import pickle
+import dbus
 
 pickle_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "mypickle.pk")
 
-# control commands to send for linux
-SEND_CMD_LINUX_PREV_SONG = "dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.Previous >/dev/null"
-SEND_CMD_LINUX_TOGGLE_SONG = "dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.PlayPause >/dev/null"
-SEND_CMD_LINUX_NEXT_SONG = "dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.Next >/dev/null"
+DBUS_BUS_NAME_SPOTIFY = "org.mpris.MediaPlayer2.spotify"
+DBUS_OBJECT_PATH = "/org/mpris/MediaPlayer2"
 
 def main():
 
-    parser = argparse.ArgumentParser(description="simple spotify from the command line")
+    parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter,
+                                     description="simple spotify from the command line\ndefault behaviour (no arguments): show current song")
 
     # Add arguments here
     # mutually exclusive prev, tog, next
@@ -46,13 +46,17 @@ def main():
     with open(pickle_file, 'wb+') as _file:
         pickle.dump(toggle_options, _file)
 
+    # set up dbus and
     # send any control commands inputted by user
+    player = dbus.SessionBus().get_object(DBUS_BUS_NAME_SPOTIFY, DBUS_OBJECT_PATH)
+    ctl_interface = dbus.Interface(player, dbus_interface="org.mpris.MediaPlayer2.Player")
+
     if args.prev:
-        os.system(SEND_CMD_LINUX_PREV_SONG)
+        ctl_interface.Previous()
     elif args.toggle:
-        os.system(SEND_CMD_LINUX_TOGGLE_SONG)
+        ctl_interface.PlayPause()
     elif args.next:
-        os.system(SEND_CMD_LINUX_NEXT_SONG)
+        ctl_interface.Next()
 
 if __name__ == "__main__":
     main()
