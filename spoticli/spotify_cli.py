@@ -28,6 +28,7 @@ import dbus
 import spotipy
 import time
 from version import __version__
+from listcreator import PrettyListCreator
 
 DBUS_BUS_NAME_SPOTIFY = "org.mpris.MediaPlayer2.spotify"
 DBUS_OBJECT_PATH = "/org/mpris/MediaPlayer2"
@@ -96,7 +97,7 @@ def main():
 
     # add a small delay so dbus retrieves the correct information in the event
     # that the song was just switched
-    time.sleep(0.1)
+    time.sleep(0.5)
 
     # get currently playing song and display its data
     track_metadata = property_interface.Get('org.mpris.MediaPlayer2.Player', 'Metadata')
