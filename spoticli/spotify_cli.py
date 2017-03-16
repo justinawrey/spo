@@ -23,12 +23,14 @@ Options:
   -v --version                     show version
 
 """
-from docopt import docopt
 import dbus
 import spotipy
 import time
+from collections import OrderedDict
+from docopt import docopt
 from version import __version__
 from listcreator import PrettyListCreator
+from getch import Getch
 
 DBUS_BUS_NAME_SPOTIFY = "org.mpris.MediaPlayer2.spotify"
 DBUS_OBJECT_PATH = "/org/mpris/MediaPlayer2"
@@ -41,8 +43,22 @@ def search_and_get_uri(searched_keywords, search_type):
     else:
         return None
 
-def main():
+def get_search_result_dict(searched_keywords, search_type, num_results=10):
+    rtn_dict = OrderedDict()
+    search_data = spotipy.Spotify().search(' '.join(searched_keywords), limit=num_results, type=search_type[:-1])
+    if search_data[search_type]['items']:
+        for item in search_data[search_type]['items']:
+            if search_type == 'tracks':
+                rtn_dict[item['uri']] = [item['name'], item['artists'][0]['name'], item['album']['name']]
+            elif search_type == 'artists':
+                rtn_dict[item['uri']] = [item['name']]
+            elif search_type == 'albums':
+                rtn_dict[item['uri']] = [item['name'], item['artists'][0]['name']]
+        return rtn_dict
+    else:
+        return None
 
+def main():
     args = docopt(__doc__, version=__version__)
 
     # try to set up dbus and relevant ctl/property interfaces
@@ -59,20 +75,58 @@ def main():
     # send any control commands inputted by user
     if args['prev']: # prev song
         ctl_interface.Previous()
+
     elif args['play']: # play/pause song
         ctl_interface.PlayPause()
         return
+
     elif args['pause']: # pause song
         ctl_interface.Pause()
         return
+
     elif args['next']: # next song
         ctl_interface.Next()
+
     elif args['list'] and args['song']: # list song
-        pass
+        results_array = get_search_result_dict(args['<search-terms>'], 'tracks')
+        if results_array:
+            listCreator = PrettyListCreator(list(results_array.values()))
+            listCreator.reprint(listCreator.pretty_list(0))
+            getch = Getch()
+            index = 0
+            while(True):
+                user_input = getch()
+                print(user_input)
+                if user_input == 'q':
+                    break
+                elif user_input == 'j':
+                    index += 1
+                    listCreator.reprint(listCreator.pretty_list(index))
+                elif user_input == 'k':
+                    index -= 1
+                    listCreator.reprint(listCreator.pretty_list(index))
+        else:
+            print("No results found for query: " + ' '.join(args['<search-terms>']))
+        return
+
     elif args['list'] and args['artist']: # list artist
-        pass
+        results_array = get_search_result_dict(args['<search-terms>'], 'artists')
+        if results_array:
+            listCreator = PrettyListCreator(list(results_array.values()))
+            listCreator.reprint(listCreator.pretty_list(0))
+        else:
+            print("No results found for query: " + ' '.join(args['<search-terms>']))
+        return
+
     elif args['list'] and args['album']: # list album
-        pass
+        results_array = get_search_result_dict(args['<search-terms>'], 'albums')
+        if results_array:
+            listCreator = PrettyListCreator(list(results_array.values()))
+            listCreator.reprint(listCreator.pretty_list(0))
+        else:
+            print("No results found for query: " + ' '.join(args['<search-terms>']))
+        return
+
     elif args['song']: # play song
         track_uri = search_and_get_uri(args['<search-terms>'], 'tracks')
         if track_uri:
@@ -80,6 +134,7 @@ def main():
         else:
             print("No results found for query: " + ' '.join(args['<search-terms>']))
             return
+
     elif args['artist']: # play artist
         artist_uri = search_and_get_uri(args['<search-terms>'], 'artists')
         if artist_uri:
@@ -87,6 +142,7 @@ def main():
         else:
             print("No results found for query: " + ' '.join(args['<search-terms>']))
             return
+
     elif args['album']: # play album
         album_uri = search_and_get_uri(args['<search-terms>'], 'albums')
         if album_uri:
