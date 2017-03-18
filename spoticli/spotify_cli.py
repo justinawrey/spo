@@ -3,24 +3,25 @@
 Usage:
   spoticli [play | pause | prev | next]
   spoticli (song | artist | album) <search-terms>...
-  spoticli list (song | artist | album) <search-terms>...
+  spoticli list (song | artist | album) <search-terms>... [-n=<n> | --num=<n>]
   spoticli (-h | --help)
   spoticli (-v | --version)
 
 Options:
-  no arguments                     show currently playing song
-  play                             play/pause current song
-  pause                            pause current song
-  prev                             previous song
-  next                             next song
-  song <search-terms>              play best matching song
-  artist <search-terms>            play best matching artist
-  album <search-terms>             play best matching album
-  list song <search-terms>         list best matching songs
-  list artist <search-terms>       list best matching artists
-  list album <search-terms>        list best matching albums
-  -h --help                        show this help message
-  -v --version                     show version
+  no arguments                      show currently playing song
+  play                              play/pause current song
+  pause                             pause current song
+  prev                              previous song
+  next                              next song
+  song <search-terms>               play best matching song
+  artist <search-terms>             play best matching artist
+  album <search-terms>              play best matching album
+  list song <search-terms>          list num best matching songs
+  list artist <search-terms>        list num best matching artists
+  list album <search-terms>         list num best matching albums
+  -n NUM --num NUM                  number of results to display [default: 10]
+  -h --help                         show this help message
+  -v --version                      show version
 
 """
 import dbus
@@ -28,9 +29,9 @@ import spotipy
 import time
 from collections import OrderedDict
 from docopt import docopt
-from version import __version__
-from listcreator import PrettyListCreator
-from getch import Getch
+from spoticli.version import __version__
+from spoticli.listcreator import PrettyListCreator
+from spoticli.getch import Getch
 
 DBUS_BUS_NAME_SPOTIFY = "org.mpris.MediaPlayer2.spotify"
 DBUS_OBJECT_PATH = "/org/mpris/MediaPlayer2"
@@ -57,6 +58,27 @@ def get_search_result_dict(searched_keywords, search_type, num_results=10):
         return rtn_dict
     else:
         return None
+
+def let_user_scroll(results_array, results_len): #returns the uri of selection on enter key press
+    results_array_length = len(results_array)
+    listCreator = PrettyListCreator(list(results_array.values()))
+    listCreator.reprint(listCreator.pretty_list(0))
+    getch = Getch()
+    index = 0
+    while(True):
+        user_input = getch()
+        if user_input == 'q' or user_input == '\x1B':
+            return None
+        elif user_input == 'j' and index < results_array_length - 1:
+            index += 1
+            listCreator.reprint(listCreator.pretty_list(index))
+        elif user_input == 'k' and index > 0:
+            index -= 1
+            listCreator.reprint(listCreator.pretty_list(index))
+        elif user_input == '\x0D':
+            listCreator.reprint('')
+            listCreator.moveup(results_len + 10)
+            return list(results_array.keys())[index]
 
 def main():
     args = docopt(__doc__, version=__version__)
@@ -88,44 +110,40 @@ def main():
         ctl_interface.Next()
 
     elif args['list'] and args['song']: # list song
-        results_array = get_search_result_dict(args['<search-terms>'], 'tracks')
+        results_array = get_search_result_dict(args['<search-terms>'], 'tracks', args['--num'])
         if results_array:
-            listCreator = PrettyListCreator(list(results_array.values()))
-            listCreator.reprint(listCreator.pretty_list(0))
-            getch = Getch()
-            index = 0
-            while(True):
-                user_input = getch()
-                print(user_input)
-                if user_input == 'q':
-                    break
-                elif user_input == 'j':
-                    index += 1
-                    listCreator.reprint(listCreator.pretty_list(index))
-                elif user_input == 'k':
-                    index -= 1
-                    listCreator.reprint(listCreator.pretty_list(index))
+            user_selection = let_user_scroll(results_array, len(results_array))
+            if user_selection:
+                ctl_interface.OpenUri(user_selection)
+            else:
+                return
         else:
             print("No results found for query: " + ' '.join(args['<search-terms>']))
-        return
+            return
 
     elif args['list'] and args['artist']: # list artist
-        results_array = get_search_result_dict(args['<search-terms>'], 'artists')
+        results_array = get_search_result_dict(args['<search-terms>'], 'artists', args['--num'])
         if results_array:
-            listCreator = PrettyListCreator(list(results_array.values()))
-            listCreator.reprint(listCreator.pretty_list(0))
+            user_selection = let_user_scroll(results_array, len(results_array))
+            if user_selection:
+                ctl_interface.OpenUri(user_selection)
+            else:
+                return
         else:
             print("No results found for query: " + ' '.join(args['<search-terms>']))
-        return
+            return
 
     elif args['list'] and args['album']: # list album
-        results_array = get_search_result_dict(args['<search-terms>'], 'albums')
+        results_array = get_search_result_dict(args['<search-terms>'], 'albums', args['--num'])
         if results_array:
-            listCreator = PrettyListCreator(list(results_array.values()))
-            listCreator.reprint(listCreator.pretty_list(0))
+            user_selection = let_user_scroll(results_array, len(results_array))
+            if user_selection:
+                ctl_interface.OpenUri(user_selection)
+            else:
+                return
         else:
             print("No results found for query: " + ' '.join(args['<search-terms>']))
-        return
+            return
 
     elif args['song']: # play song
         track_uri = search_and_get_uri(args['<search-terms>'], 'tracks')

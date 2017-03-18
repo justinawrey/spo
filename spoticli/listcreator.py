@@ -3,16 +3,20 @@ import sys
 
 class PrettyListCreator:
     def __init__(self, input_data): # input_data = 2D array of data
-        self.num_rows = len(input_data) + 1
-        self.num_cols = len(input_data[0])
-        if self.num_cols == 1:
+        num_cols = len(input_data[0])
+        self.col_widths = []
+        for col in range(num_cols):
+            self.col_widths.append(max(len(row[col]) for row in input_data) + 4)
+
+        # header stuff
+        if num_cols == 1:
             input_data.insert(0, ['Artist'])
-        elif self.num_cols == 2:
+        elif num_cols == 2:
             input_data.insert(0, ['Album', 'Artist'])
-        elif self.num_cols == 3:
+        elif num_cols == 3:
             input_data.insert(0, ['Song', 'Artist', 'Album'])
-        self.col_width = max(len(word) for row in input_data for word in row) + 4
-        input_data.insert(1, ['=' * self.col_width for x in range(self.num_cols)])
+        input_data.insert(1, ['=' * width for width in self.col_widths])
+
         self.input_data = input_data
         self.text = ''
 
@@ -21,13 +25,13 @@ class PrettyListCreator:
         rtn_str = ''
         for row in self.input_data:
             print_str = ''
-            for word in row:
-                print_str += "".join(word.ljust(self.col_width))
-            if index == highlight_row + 2: # skip first row
+            for col in range(len(self.col_widths)):
+                print_str += row[col].ljust(self.col_widths[col])
+            if index == highlight_row + 2: # skip first two rows
                 print_str = '\x1b[6;30;42m' + print_str + '\x1b[0m'
             rtn_str += print_str + '\n'
             index += 1
-        return '\n' + rtn_str
+        return '\n' + rtn_str + '\n\nmove down:\t<j>\nmove up:\t<k>\nplay selection:\t<enter>\nquit:\t\t<q> or <esc>\n\n'
 
     def moveup(self, lines):
         for _ in range(lines):
