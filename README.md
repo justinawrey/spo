@@ -45,14 +45,14 @@ Artist:	Rick Astley
 Album:	Whenever You Need Somebody
 ```
 
-Basic song navigation:
-
 ```
 justin:~$ spoticli album dark side of the moon
 Song:	Speak to Me
 Artist:	Pink Floyd
 Album:	The Dark Side of the Moon
 ```
+
+Basic song navigation:
 
 ```
 justin:~$ spoticli next
@@ -68,7 +68,7 @@ Artist:	Pink Floyd
 Album:	The Dark Side of the Moon
 ```
 
-Choose a song, artist, or album via results list:
+Search and select a song, artist, or album via results list:
 
 ```
 justin:~$ spoticli list song sandstorm
@@ -85,6 +85,51 @@ Sandstorm - Ariel Remix     Darude                  Sandstorm
 Sandstorm                   David Garrett           Music                                                                
 Sandstorm                   DJ Crazy J Rodriguez    Dubstep, Vol. 8                                                      
 Sandstorm                   Michael McCann          Deus Ex: Mankind Divided (Original Soundtrack - Extended Edition)    
+
+
+move down:	<j>
+move up:	<k>
+play selection:	<enter>
+quit:		<q> or <esc>
+```
+
+```
+justin:~$ spoticli list artist tiny tim
+
+Artist                                  
+========================================
+Tiny Tim                                
+Tiny Tim w/ The New Duncan Imperials    
+Tiny Legs Tim                           
+DJ Tiny Tim                             
+Tiny Tim with Gary Owens                
+Tiny Tim with Harry Roy & His Band      
+Tiny Tim's Family                       
+
+
+move down:	<j>
+move up:	<k>
+play selection:	<enter>
+quit:		<q> or <esc>
+```
+
+Search and select songs from a particular artist or album:
+
+```
+justin:~$ spoticli list song blink 182
+
+Song                     Artist       Album                             
+========================================================================
+I Miss You               blink-182    blink-182                         
+All The Small Things     blink-182    Enema Of The State                
+What's My Age Again?     blink-182    Enema Of The State                
+She's Out Of Her Mind    blink-182    California                        
+Feeling This             blink-182    blink-182                         
+Bored To Death           blink-182    California                        
+Adam's Song              blink-182    Enema Of The State                
+Parking Lot              blink-182    Parking Lot                       
+First Date               blink-182    Take Off Your Pants And Jacket    
+Down                     blink-182    blink-182                         
 
 
 move down:	<j>
