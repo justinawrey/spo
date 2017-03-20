@@ -5,7 +5,7 @@ SpotiCLI is a simple command line interface for Spotify. Keep control of
 your music from the comfort of your terminal!
 
 A quick rundown:
-~~~~~~~~~~~~~~~~
+----------------
 
 -  song control: *play, pause, prev,* and *next* song
 -  search and quickplay best matching *song, artist,* or *album* (I'm
@@ -18,8 +18,36 @@ songs. ***Oh boy!***
 
 **Currently Python 3 and Linux/Unix only.**
 
+::
+
+    justin:~$ spoticli --help
+    SpotiCLI - A simple command line controller for Spotify!
+
+    Usage:
+      spoticli [play | pause | prev | next]
+      spoticli (song | artist | album) <search-terms>...
+      spoticli list (song | artist | album) <search-terms>... [-n=<n> | --num=<n>]
+      spoticli (-h | --help)
+      spoticli (-v | --version)
+
+    Options:
+      no arguments                      show currently playing song
+      play                              play/pause current song
+      pause                             pause current song
+      prev                              previous song
+      next                              next song
+      song <search-terms>               play best matching song
+      artist <search-terms>             play best matching artist
+      album <search-terms>              play best matching album
+      list song <search-terms>          list num best matching songs
+      list artist <search-terms>        list num best matching artists
+      list album <search-terms>         list num best matching albums
+      -n NUM --num NUM                  number of results to display [default: 10]
+      -h --help                         show this help message
+      -v --version                      show version
+
 Installation
-~~~~~~~~~~~~
+------------
 
 Via everyones favorite package manager:
 
@@ -37,7 +65,7 @@ or a classic:
 equivalents.**
 
 Requirements:
-~~~~~~~~~~~~~
+-------------
 
 The installation methods above should automatically install all
 requirements.
@@ -48,7 +76,7 @@ These are: 1. `docopt <https://github.com/docopt/docopt>`__ 2.
 `requests <https://github.com/kennethreitz/requests>`__
 
 Getting Started:
-~~~~~~~~~~~~~~~~
+----------------
 
 Play a *song, artist,* or *album* via quickplay:
 
@@ -151,34 +179,3 @@ Search and select songs from a particular artist or album:
     move up:    <k>
     play selection: <enter>
     quit:       <q> or <esc>
-
-Full functionality:
-~~~~~~~~~~~~~~~~~~~
-
-::
-
-    justin:~$ spoticli --help
-    SpotiCLI - A simple command line controller for Spotify!
-
-    Usage:
-      spoticli [play | pause | prev | next]
-      spoticli (song | artist | album) <search-terms>...
-      spoticli list (song | artist | album) <search-terms>... [-n=<n> | --num=<n>]
-      spoticli (-h | --help)
-      spoticli (-v | --version)
-
-    Options:
-      no arguments                      show currently playing song
-      play                              play/pause current song
-      pause                             pause current song
-      prev                              previous song
-      next                              next song
-      song <search-terms>               play best matching song
-      artist <search-terms>             play best matching artist
-      album <search-terms>              play best matching album
-      list song <search-terms>          list num best matching songs
-      list artist <search-terms>        list num best matching artists
-      list album <search-terms>         list num best matching albums
-      -n NUM --num NUM                  number of results to display [default: 10]
-      -h --help                         show this help message
-      -v --version                      show version
