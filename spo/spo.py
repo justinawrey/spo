@@ -1,11 +1,12 @@
-"""SpotiCLI - A simple command line controller for Spotify!
+"""Spo - A simple command line controller for Spotify!
 
 Usage:
-  spoticli [play | pause | prev | next]
-  spoticli (song | artist | album) <search-terms>...
-  spoticli list (song | artist | album) <search-terms>... [-n=<n> | --num=<n>]
-  spoticli (-h | --help)
-  spoticli (-v | --version)
+  spo [play | pause | prev | next | save]
+  spo (song | artist | album) <search-terms>...
+  spo search <search-terms>... [-n=<n> | --num=<n>]
+  spo vol (up | down)
+  spo (-h | --help)
+  spo (-v | --version)
 
 Options:
   no arguments                      show currently playing song
@@ -13,13 +14,13 @@ Options:
   pause                             pause current song
   prev                              previous song
   next                              next song
-  song <search-terms>               play best matching song
-  artist <search-terms>             play best matching artist
-  album <search-terms>              play best matching album
-  list song <search-terms>          list num best matching songs
-  list artist <search-terms>        list num best matching artists
-  list album <search-terms>         list num best matching albums
-  -n NUM --num NUM                  number of results to display [default: 10]
+  save                              save song to my music (requires auth)
+  song <search-terms>               quickplay song
+  artist <search-terms>             quickplay artist
+  album <search-terms>              quickplay album
+  search <search-terms>             do keyword search and list best matches
+  vol (up | down)                   tweak volume up/down by 5%
+  -n NUM --num NUM                  number of search results to display [default: 10]
   -h --help                         show this help message
   -v --version                      show version
 
@@ -27,14 +28,17 @@ Options:
 import dbus
 import spotipy
 import time
+import os
 from collections import OrderedDict
 from docopt import docopt
-from spoticli.version import __version__
-from spoticli.listcreator import PrettyListCreator
-from spoticli.getch import Getch
+from version import __version__
+from listcreator import PrettyListCreator
+from getch import Getch
 
 DBUS_BUS_NAME_SPOTIFY = "org.mpris.MediaPlayer2.spotify"
 DBUS_OBJECT_PATH = "/org/mpris/MediaPlayer2"
+VOL_UP = "amixer -q -D pulse sset Master 5%+"
+VOL_DOWN = "amixer -q -D pulse sset Master 5%-"
 
 def search_and_get_uri(searched_keywords, search_type):
     search_data = spotipy.Spotify().search(' '.join(searched_keywords), limit=1, type=search_type[:-1])
@@ -90,8 +94,15 @@ def main():
         ctl_interface = dbus.Interface(player, dbus_interface="org.mpris.MediaPlayer2.Player")
         property_interface = dbus.Interface(player, dbus_interface='org.freedesktop.DBus.Properties')
     except dbus.DBusException:
+        getch = Getch()
         print('Error: cannot connect to spotify')
-        print('Please start spotify client')
+        print('Would you like to launch spotify client? (y/n)')
+        if getch() == 'y':
+            print('launching spotify...')
+            os.system('spotify --minimized & > /dev/null')
+            print('spotify launched successfully')
+        else:
+            print('aborting...')
         return
 
     # send any control commands inputted by user
@@ -109,32 +120,18 @@ def main():
     elif args['next']: # next song
         ctl_interface.Next()
 
-    elif args['list'] and args['song']: # list song
+    elif args['save']: # save song to my music (requires user authentication)
+        return
+
+    elif args['vol']: # tweak volume by 5%
+        if args['up']:
+            os.system(VOL_UP)
+        else:
+            os.system(VOL_DOWN)
+        return
+
+    elif args['search']: # list search results
         results_array = get_search_result_dict(args['<search-terms>'], 'tracks', args['--num'])
-        if results_array:
-            user_selection = let_user_scroll(results_array, len(results_array))
-            if user_selection:
-                ctl_interface.OpenUri(user_selection)
-            else:
-                return
-        else:
-            print("No results found for query: " + ' '.join(args['<search-terms>']))
-            return
-
-    elif args['list'] and args['artist']: # list artist
-        results_array = get_search_result_dict(args['<search-terms>'], 'artists', args['--num'])
-        if results_array:
-            user_selection = let_user_scroll(results_array, len(results_array))
-            if user_selection:
-                ctl_interface.OpenUri(user_selection)
-            else:
-                return
-        else:
-            print("No results found for query: " + ' '.join(args['<search-terms>']))
-            return
-
-    elif args['list'] and args['album']: # list album
-        results_array = get_search_result_dict(args['<search-terms>'], 'albums', args['--num'])
         if results_array:
             user_selection = let_user_scroll(results_array, len(results_array))
             if user_selection:

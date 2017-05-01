@@ -1,7 +1,7 @@
-SpotiCLI
+spo
 ========
 
-SpotiCLI is a simple command line interface for Spotify. Keep control of
+spo is a simple command line interface for Spotify. Keep control of
 your music from the comfort of your terminal!
 
 A quick rundown:
@@ -20,15 +20,15 @@ songs. ***Oh boy!***
 
 ::
 
-    justin:~$ spoticli --help
-    SpotiCLI - A simple command line controller for Spotify!
+    justin:~$ spo --help
+    spo - A simple command line controller for Spotify!
 
     Usage:
-      spoticli [play | pause | prev | next]
-      spoticli (song | artist | album) <search-terms>...
-      spoticli list (song | artist | album) <search-terms>... [-n=<n> | --num=<n>]
-      spoticli (-h | --help)
-      spoticli (-v | --version)
+      spo [play | pause | prev | next]
+      spo (song | artist | album) <search-terms>...
+      spo list (song | artist | album) <search-terms>... [-n=<n> | --num=<n>]
+      spo (-h | --help)
+      spo (-v | --version)
 
     Options:
       no arguments                      show currently playing song
@@ -53,7 +53,7 @@ Via everyones favorite package manager:
 
 .. code:: python
 
-    pip install spoticli
+    pip install spo
 
 or a classic:
 
@@ -82,14 +82,14 @@ Play a *song, artist,* or *album* via quickplay:
 
 ::
 
-    justin:~$ spoticli song never gonna give you up
+    justin:~$ spo song never gonna give you up
     Song:   Never Gonna Give You Up
     Artist: Rick Astley
     Album:  Whenever You Need Somebody
 
 ::
 
-    justin:~$ spoticli album dark side of the moon
+    justin:~$ spo album dark side of the moon
     Song:   Speak to Me
     Artist: Pink Floyd
     Album:  The Dark Side of the Moon
@@ -98,14 +98,14 @@ Basic song navigation:
 
 ::
 
-    justin:~$ spoticli next
+    justin:~$ spo next
     Song:   Breathe (In the Air)
     Artist: Pink Floyd
     Album:  The Dark Side of the Moon
 
 ::
 
-    justin:~$ spoticli prev
+    justin:~$ spo prev
     Song:   Speak to Me
     Artist: Pink Floyd
     Album:  The Dark Side of the Moon
@@ -114,7 +114,7 @@ Search and select a song, artist, or album via results list:
 
 ::
 
-    justin:~$ spoticli list song sandstorm
+    justin:~$ spo list song sandstorm
 
     Song                        Artist                  Album                                                                
     =========================================================================================================================
@@ -137,7 +137,7 @@ Search and select a song, artist, or album via results list:
 
 ::
 
-    justin:~$ spoticli list artist tiny tim
+    justin:~$ spo list artist tiny tim
 
     Artist                                  
     ========================================
@@ -159,7 +159,7 @@ Search and select songs from a particular artist or album:
 
 ::
 
-    justin:~$ spoticli list song blink 182
+    justin:~$ spo list song blink 182
 
     Song                     Artist       Album                             
     ========================================================================
