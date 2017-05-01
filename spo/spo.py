@@ -29,8 +29,8 @@ import dbus
 import spotipy
 import time
 import os
-from collections import OrderedDict
 from docopt import docopt
+from collections import OrderedDict
 from version import __version__
 from listcreator import PrettyListCreator
 from getch import Getch

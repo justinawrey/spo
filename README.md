@@ -13,12 +13,13 @@ For Spotify free users, ads will stay play when navigating through songs.  **_Oh
 
 ```
 justin:~$ spo --help
-spo - A simple command line controller for Spotify!
+Spo - A simple command line controller for Spotify!
 
 Usage:
-  spo [play | pause | prev | next]
+  spo [play | pause | prev | next | save]
   spo (song | artist | album) <search-terms>...
-  spo list (song | artist | album) <search-terms>... [-n=<n> | --num=<n>]
+  spo search <search-terms>... [-n=<n> | --num=<n>]
+  spo vol (up | down)
   spo (-h | --help)
   spo (-v | --version)
 
@@ -28,13 +29,13 @@ Options:
   pause                             pause current song
   prev                              previous song
   next                              next song
-  song <search-terms>               play best matching song
-  artist <search-terms>             play best matching artist
-  album <search-terms>              play best matching album
-  list song <search-terms>          list num best matching songs
-  list artist <search-terms>        list num best matching artists
-  list album <search-terms>         list num best matching albums
-  -n NUM --num NUM                  number of results to display [default: 10]
+  save                              save song to my music (requires auth)
+  song <search-terms>               quickplay song
+  artist <search-terms>             quickplay artist
+  album <search-terms>              quickplay album
+  search <search-terms>             do keyword search and list best matches
+  vol (up | down)                   tweak volume up/down by 5%
+  -n NUM --num NUM                  number of search results to display [default: 10]
   -h --help                         show this help message
   -v --version                      show version
 ```
