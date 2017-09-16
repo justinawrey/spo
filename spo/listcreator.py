@@ -1,22 +1,21 @@
 import re
 import sys
+import os
 
 class PrettyListCreator:
     def __init__(self, input_data): # input_data = 2D array of data
-        num_cols = len(input_data[0])
         self.col_widths = []
-        for col in range(num_cols):
+        self.total_width = 0
+        self.overflow = False
+        for col in range(3):
             self.col_widths.append(max(len(row[col]) for row in input_data) + 4)
+            self.total_width += self.col_widths[col]
+        _, t_columns = os.popen('stty size', 'r').read().split() # get width of terminal
+        if self.total_width > int(t_columns):
+            self.overflow = True
 
         # header stuff
-        if num_cols == 1:
-            input_data.insert(0, ['Artist'])
-        elif num_cols == 2:
-            input_data.insert(0, ['Album', 'Artist'])
-        elif num_cols == 3:
-            input_data.insert(0, ['Song', 'Artist', 'Album'])
-        input_data.insert(1, ['=' * width for width in self.col_widths])
-
+        input_data.insert(0, ['Song', 'Artist', 'Album'])
         self.input_data = input_data
         self.text = ''
 
@@ -25,8 +24,10 @@ class PrettyListCreator:
         rtn_str = ''
         for row in self.input_data:
             print_str = ''
-            for col in range(len(self.col_widths)):
+            for col in range(3):
                 print_str += row[col].ljust(self.col_widths[col])
+            if self.overflow:
+                print_str = print_str[:self.total_width - 3] + '...'
             if index == highlight_row + 2: # skip first two rows
                 print_str = '\x1b[6;30;42m' + print_str + '\x1b[0m'
             rtn_str += print_str + '\n'
