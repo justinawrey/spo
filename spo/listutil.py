@@ -1,6 +1,7 @@
 import re
 import sys
 import os
+from getch import Getch
 
 class PrettyListCreator:
     def __init__(self, input_data): # input_data = 2D array of data
@@ -49,4 +50,4 @@ class PrettyListCreator:
         sys.stdout.write(text)
         self.text = text
 
-# end ListCreator
+# end PrettyListCreator
