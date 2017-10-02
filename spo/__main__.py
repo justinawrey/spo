@@ -1,7 +1,7 @@
 """Spo - A simple command line controller for Spotify!
 
 Usage:
-  spo [play | pause | prev | next | replay | save]
+  spo [play | pause | prev | next | replay | save | delete]
   spo (song | artist | album) <search-terms>...
   spo search <search-terms>... [-n=<n> | --num=<n>]
   spo recent [-n=<n> | --num=<n>]
@@ -18,6 +18,7 @@ Options:
   prev                             previous song
   next                             next song
   save                             save current song to my music
+  delete                           deletes current song from my music
   song <search-terms>              quickplay song
   artist <search-terms>            quickplay artist
   album <search-terms>             quickplay album
@@ -43,7 +44,6 @@ from docopt import docopt
 from spo.version import __VERSION__
 from spo.listutil import PrettyListCreator
 from spo.getch import Getch
-from spo.apicaller import APICaller
 
 #returns the uri of selection on enter key press
 def let_user_scroll(results_array, results_len):
