@@ -1,40 +1,41 @@
 """Spo - A simple command line controller for Spotify!
 
 Usage:
-  spo [play | pause | prev | next | replay | save]
+  spo [play | pause | prev | next | save]
   spo (song | artist | album) <search-terms>...
   spo search <search-terms>... [-n=<n> | --num=<n>]
   spo recent [-n=<n> | --num=<n>]
-  spo vol (up | down)
+  spo vol (up | down) [-t=<t> | --tweak=<t>]
   spo (shuffle | repeat) (on | off)
   spo (-h | --help)
   spo (-v | --version)
 
 Options:
-  no arguments                      show currently playing song
-  play                              play/pause current song
-  pause                             pause current song
-  prev                              previous song
-  next                              next song
-  replay                            replay current song
-  save                              save current song to my music
-  song <search-terms>               quickplay song
-  artist <search-terms>             quickplay artist
-  album <search-terms>              quickplay album
-  search <search-terms>             do keyword search and navigate through best matches
-  recent                            show and navigate through recently played songs
-  shuffle (on | off)                turn shuffle mode on or off
-  repeat (on | off)                 turn repeat mode on or off
-  vol (up | down)                   tweak spotify client volume up/down by 5%
-  -n NUM --num NUM                  number of search/recently played results to display [default: 10]
-  -h --help                         show this help message
-  -v --version                      show version
+  no arguments                     show currently playing song
+  play                             play current song
+  pause                            pause current song
+  prev                             previous song
+  next                             next song
+  save                             save current song to my music
+  song <search-terms>              quickplay song
+  artist <search-terms>            quickplay artist
+  album <search-terms>             quickplay album
+  search <search-terms>            do keyword search and navigate through best matches
+  recent                           show and navigate through recently played songs
+  shuffle (on | off)               turn shuffle mode on or off
+  repeat (on | off)                turn repeat mode on or off
+  vol (up | down)                  tweak spotify client volume up/down by 5%
+  -n NUM --num NUM                 number of search/recently played results to display [default: 10]
+  -t NUM --tweak NUM               percentage by which volume should be tweaked [default: 5]
+  -h --help                        show this help message
+  -v --version                     show version
 
 """
-
-# external packages
+# std packages
 import time
 import os
+
+# external packages
 from docopt import docopt
 
 # from within this project
