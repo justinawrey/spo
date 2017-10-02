@@ -149,9 +149,9 @@ def shuffle(on_off):
         query_val = "off"
 
     try:
-        requests.put("https://api.spotify.com/v1/me/player/shuffle",
+        print(requests.put("https://api.spotify.com/v1/me/player/shuffle",
                      data={"state": query_val},
-                     headers={"Authorization": "Bearer " + access_token})
+                     headers={"Authorization": "Bearer " + access_token}))
     except requests.exceptions.RequestException as exception:
         print(exception)
         sys.exit(1)
@@ -165,15 +165,15 @@ def repeat(on_off):
     access_token = get_tokens()["access_token"]
 
     try:
-        requests.put("https://api.spotify.com/v1/me/player/repeat",
+       print(requests.put("https://api.spotify.com/v1/me/player/repeat",
                      data={"state": str(on_off).lower()},
-                     headers={"Authorization": "Bearer " + access_token})
+                     headers={"Authorization": "Bearer " + access_token}))
     except requests.exceptions.RequestException as exception:
         print(exception)
         sys.exit(1)
 
 
-def volume(up_down, percent):
+def volume(up_down, percent=5):
     """
     Set volume to a specific volume.
         :param up_down {bool}: whether to tweak volume up or down
@@ -185,6 +185,7 @@ def volume(up_down, percent):
     try:
         resp = requests.get("https://api.spotify.com/v1/me/player",
                             headers={"Authorization": "Bearer " + access_token})
+        print(resp)
     except requests.exceptions.RequestException as exception:
         print(exception)
         sys.exit(1)
@@ -225,3 +226,33 @@ def prev_next(option):
     except requests.exceptions.RequestException as exception:
         print(exception)
         sys.exit(1)
+
+while True:
+    inp = input("Enter a command: ")
+    if inp == "prev":
+        prev_next("previous")
+    elif inp == "next":
+        prev_next("next")
+    elif inp == "play":
+        play_pause("play")
+    elif inp == "pause":
+        play_pause("pause")
+    elif inp == "show":
+        show_curr()
+    else:
+        inp = inp.split()
+        if inp[0] == "vol":
+            if inp[1] == "up":
+                volume(True, inp[2])
+            else:
+                volume(False, inp[2])
+        elif inp[0] == "shuffle":
+            if inp[1] == "on":
+                shuffle(True)
+            else:
+                shuffle(False)
+        elif inp[0] == "repeat":
+            if inp[1] == "on":
+                repeat(True)
+            else:
+                repeat(False)

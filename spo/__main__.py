@@ -1,7 +1,7 @@
 """Spo - A simple command line controller for Spotify!
 
 Usage:
-  spo [play | pause | prev | next | save]
+  spo [play | pause | prev | next | replay | save]
   spo (song | artist | album) <search-terms>...
   spo search <search-terms>... [-n=<n> | --num=<n>]
   spo recent [-n=<n> | --num=<n>]
@@ -14,6 +14,7 @@ Options:
   no arguments                     show currently playing song
   play                             play current song
   pause                            pause current song
+  replay                           replay current song
   prev                             previous song
   next                             next song
   save                             save current song to my music
