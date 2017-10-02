@@ -8,6 +8,9 @@ import sys
 # external packages
 import requests
 
+# internal packages
+from .table import print_table
+
 # relevant app information
 CLIENT_ID = os.environ["SPO_CLIENT_ID"]
 CLIENT_SECRET = os.environ["SPO_CLIENT_SECRET"]
@@ -115,9 +118,11 @@ def curr_song():
         sys.exit(1)
 
     resp_json = resp.json()
-    print("Song:   " + resp_json["item"]["name"])
-    print("Artist: " + resp_json["item"]["artists"][0]["name"])
-    print("Album:  " + resp_json["item"]["album"]["name"])
+    song = resp_json["item"]["name"]
+    artist = resp_json["item"]["artists"][0]["name"]
+    album = resp_json["item"]["album"]["name"]
+
+    print_table([[song, artist, album]])
 
 
 def play():
@@ -287,8 +292,8 @@ def save():
     # save currently playing song to my music
     try:
         print(requests.put("https://api.spotify.com/v1/me/tracks",
-                     params={"ids": track_id},
-                     headers={"Authorization": "Bearer " + access_token}))
+                           params={"ids": track_id},
+                           headers={"Authorization": "Bearer " + access_token}))
     except requests.exceptions.RequestException as exception:
         print(exception)
         sys.exit(1)
@@ -318,49 +323,10 @@ def delete():
         print(exception)
         sys.exit(1)
 
+
 def recent(num):
     """
     Display recently played songs.
         :param num {int}: number of recently played songs to display
     """
-
-
-
-authenticate()
-while True:
-    inp = input("Enter a command: ")
-    if inp == "prev":
-        prev_song()
-    elif inp == "next":
-        next_song()
-    elif inp == "play":
-        play()
-    elif inp == "pause":
-        pause()
-    elif inp == "show":
-        curr_song()
-    elif inp == "replay":
-        replay()
-    elif inp == "save":
-        save()
-    elif inp == "delete":
-        delete()
-    else:
-        inp = inp.split()
-        if inp[0] == "vol":
-            if inp[1] == "up":
-                volume(True, inp[2])
-            else:
-                volume(False, inp[2])
-        elif inp[0] == "shuffle":
-            if inp[1] == "on":
-                shuffle(True)
-            else:
-                shuffle(False)
-        elif inp[0] == "repeat":
-            if inp[1] == "on":
-                repeat(True)
-            else:
-                repeat(False)
-        elif inp[0] == "recent":
-            recent(inp[1])
+    pass
