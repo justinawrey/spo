@@ -207,11 +207,11 @@ def repeat(on_off):
         sys.exit(1)
 
 
-def volume(up_down, percent=5):
+def volume(up_down, amt=5):
     """
     Set volume to a specific volume.
-        :param up_down {bool}: whether to tweak volume up or down
-        :param percent {int}: percentage by which to tweak volume
+        :param up_down {bool}: whether to turn the volume up or down
+        :param amt {int}: percentage by which to tweak volume (must be nonneg)
     """
     access_token = get_tokens()["access_token"]
 
@@ -226,18 +226,18 @@ def volume(up_down, percent=5):
 
     # compute new volume
     if up_down:
-        new_vol = int(((100 + int(percent)) / 100) * vol)
-        if new_vol > 100:
-            new_vol = 100
+        adjusted_vol = int(vol + int(amt))
+        if adjusted_vol > 100:
+            adjusted_vol = 100
     else:
-        new_vol = int(((100 - int(percent)) / 100) * vol)
-        if new_vol < 0:
-            new_vol = 0
+        adjusted_vol = int(vol - int(amt))
+        if adjusted_vol < 0:
+            adjusted_vol = 0
 
     # tweak volume
     try:
         requests.put("https://api.spotify.com/v1/me/player/volume",
-                     params={"volume_percent": new_vol},
+                     params={"volume_percent": str(adjusted_vol)},
                      headers={"Authorization": "Bearer " + access_token})
     except requests.exceptions.RequestException as exception:
         print(exception)
@@ -287,8 +287,6 @@ def save():
         sys.exit(1)
     track_id = resp.json()["item"]["id"]
 
-    print(track_id)
-
     # save currently playing song to my music
     try:
         print(requests.put("https://api.spotify.com/v1/me/tracks",
@@ -329,4 +327,32 @@ def recent(num):
     Display recently played songs.
         :param num {int}: number of recently played songs to display
     """
-    pass
+    access_token = get_tokens()["access_token"]
+
+    # this endpoint does not supply album names
+    try:
+        resp = requests.get("https://api.spotify.com/v1/me/player/recently-played",
+                            params={"limit": str(num)},
+                            headers={"Authorization": "Bearer " + access_token})
+    except requests.exceptions.RequestException as exception:
+        print(exception)
+        sys.exit(1)
+
+    to_print = []
+    for item in resp.json()["items"]:
+        song = item["track"]["name"]
+        artist = item["track"]["artists"][0]["name"]
+        track_id = item["track"]["id"]  # used to retrieve album name
+
+        # retrieve album name
+        try:
+            resp = requests.get("https://api.spotify.com/v1/tracks/" + track_id,
+                                headers={"Authorization": "Bearer " + access_token})
+        except requests.exceptions.RequestException as exception:
+            print(exception)
+            sys.exit(1)
+
+        album = resp.json()["album"]["name"]
+        to_print.append([song, artist, album])
+
+    print_table(to_print)

@@ -1,6 +1,5 @@
 import spo.api as api
 
-api.authenticate()
 while True:
     inp = input("Enter a command: ")
     if inp == "prev":
@@ -24,7 +23,7 @@ while True:
         if inp[0] == "vol":
             if inp[1] == "up":
                 api.volume(True, inp[2])
-            else:
+            elif inp[1] == "down":
                 api.volume(False, inp[2])
         elif inp[0] == "shuffle":
             if inp[1] == "on":
