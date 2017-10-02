@@ -207,7 +207,7 @@ def repeat(on_off):
         sys.exit(1)
 
 
-def volume(up_down, amt=5):
+def volume(up_down, amt):
     """
     Set volume to a specific volume.
         :param up_down {bool}: whether to turn the volume up or down
@@ -353,6 +353,35 @@ def recent(num):
             sys.exit(1)
 
         album = resp.json()["album"]["name"]
+        to_print.append([song, artist, album])
+
+    print_table(to_print)
+
+
+def search(amt, *args):
+    """
+    Searches for a song via search terms and lists a table of
+    size 'amt' containing search results.
+        :param amt=5 {int}: amount of results to show
+        :param *args {[string]}: search terms to search with
+    """
+
+    access_token = get_tokens()["access_token"]
+
+    try:
+        resp = requests.get("https://api.spotify.com/v1/search",
+                            params={"q": "+".join(args), "type": "track",
+                                    "limit": str(amt)},
+                            headers={"Authorization": "Bearer " + access_token})
+    except requests.exceptions.RequestException as exception:
+        print(exception)
+        sys.exit(1)
+
+    to_print = []
+    for item in resp.json()["tracks"]["items"]:
+        song = item["name"]
+        artist = item["artists"][0]["name"]
+        album = item["album"]["name"]
         to_print.append([song, artist, album])
 
     print_table(to_print)

@@ -26,8 +26,8 @@ Options:
   recent                           show and navigate through recently played songs
   shuffle (on | off)               turn shuffle mode on or off
   repeat (on | off)                turn repeat mode on or off
-  vol (up | down)                  tweak spotify client volume up/down by 5%
-  -n NUM --num NUM                 number of search/recently played results to display [default: 10]
+  vol (up | down)                  tweak spotify client volume up/down
+  -n NUM --num NUM                 number of search/recently played results to display [default: 5]
   -t NUM --tweak NUM               percentage by which volume should be tweaked [default: 5]
   -h --help                        show this help message
   -v --version                     show version
@@ -41,9 +41,9 @@ import os
 from docopt import docopt
 
 # from within this project
-from spo.version import __VERSION__
-from spo.listutil import PrettyListCreator
-from spo.getch import Getch
+from .version import __VERSION__
+from .listutil import PrettyListCreator
+from .getch import Getch
 
 #returns the uri of selection on enter key press
 def let_user_scroll(results_array, results_len):

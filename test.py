@@ -37,3 +37,6 @@ while True:
                 api.repeat(False)
         elif inp[0] == "recent":
             api.recent(inp[1])
+        elif inp[0] == "search":
+            search_terms = inp[2:]
+            api.search(inp[1], *search_terms)
