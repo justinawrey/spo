@@ -47,6 +47,20 @@ def main():
     refresh authentication when needed with user explicitly refreshing api tokens.
     """
 
+    # check if authenticated
+    tokens = get_tokens()
+    if not tokens:
+        authenticate()
+
+    # refresh if needed
+    else:
+        refresh_token = tokens["refresh_token"]
+        last_refreshed = tokens["last_refreshed"]
+        expires_in = tokens["expires_in"]
+        curr_time = time.time()
+        if curr_time - last_refreshed > expires_in:
+            refresh_tokens(refresh_token)
+
     # parse command line args
     args = docopt(__doc__, version=__VERSION__)
 

@@ -1,4 +1,3 @@
-2. implement authentication and auto refresh
 3. implement scrolling through lists
 4. implement ... on overflow
 5. update readmes and get onto pip

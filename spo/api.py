@@ -10,7 +10,7 @@ import json
 import requests
 
 # internal packages
-from .table import print_table
+from .table import *
 
 # relevant app information
 CLIENT_ID = os.environ["SPO_CLIENT_ID"]
@@ -22,24 +22,33 @@ SCOPES = "user-library-modify user-read-playback-state user-read-currently-playi
 def get_tokens():
     """
     Returns dict containing current access and refresh tokens, as well as expiry times.
-    Returns None if user has not yet authenticated.
+    Returns False if user has not yet authenticated. Returns dict of the form:
+    {
+        "access_token": <access token>
+        "refresh_token": <refresh token>
+        "expires_in": <token lifetime>
+        "last_refreshed": <time at which token was last refreshed>
+    }
     """
-    with open("token.pk", "rb") as pickle_file:
-        token_data = pickle.load(pickle_file)
-    return token_data
+
+    try:
+        with open("token.pk", "rb") as pickle_file:
+            token_data = pickle.load(pickle_file)
+        return token_data
+    except FileNotFoundError:
+        return False
 
 
-def refresh_tokens():
+def refresh_tokens(refresh_token):
     """
     Refreshes users access and refresh tokens.
+        :param refresh_token {string}: refresh token for spotify api
     """
-    with open("token.pk", "rb") as pickle_file:
-        data = pickle.load(pickle_file)
 
     try:
         resp = requests.post("https://accounts.spotify.com/api/token",
                              data={"grant_type": "refresh_token",
-                                   "refresh_token": data["refresh_token"]},
+                                   "refresh_token": refresh_token},
                              auth=(CLIENT_ID, CLIENT_SECRET))
     except requests.exceptions.RequestException as exception:
         print(exception)
@@ -47,9 +56,10 @@ def refresh_tokens():
 
     # pickle refreshed information
     resp_json = resp.json()
+    data = {}
     data["access_token"] = resp_json["access_token"]
     data["expires_in"] = resp_json["expires_in"]
-    data["received_time"] = time.time()
+    data["last_refreshed"] = time.time()
 
     with open("token.pk", "wb") as pickle_file:
         pickle.dump(data, pickle_file)
@@ -99,7 +109,7 @@ def authenticate():
         "access_token": resp_json["access_token"],
         "refresh_token": resp_json["refresh_token"],
         "expires_in": resp_json["expires_in"],
-        "received_time": time.time(),
+        "last_refreshed": time.time(),
     }
     with open("token.pk", "wb") as pickle_file:
         pickle.dump(pickle_data, pickle_file)
@@ -302,8 +312,8 @@ def save():
     # save currently playing song to my music
     try:
         requests.put("https://api.spotify.com/v1/me/tracks",
-                           params={"ids": track_id},
-                           headers={"Authorization": "Bearer " + access_token})
+                     params={"ids": track_id},
+                     headers={"Authorization": "Bearer " + access_token})
     except requests.exceptions.RequestException as exception:
         print(exception)
         sys.exit(1)
@@ -387,7 +397,7 @@ def search(amt, *args):
     except requests.exceptions.RequestException as exception:
         print(exception)
         sys.exit(1)
-    
+
     resp_json = resp.json()
 
     # assert that actual results were obtained
@@ -402,7 +412,7 @@ def search(amt, *args):
         album = item["album"]["name"]
         to_print.append([song, artist, album])
 
-    print_table(to_print)
+    print_table(to_print, 0, True)
 
 
 def quickplay(option, *args):
