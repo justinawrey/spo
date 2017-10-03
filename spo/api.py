@@ -387,9 +387,16 @@ def search(amt, *args):
     except requests.exceptions.RequestException as exception:
         print(exception)
         sys.exit(1)
+    
+    resp_json = resp.json()
+
+    # assert that actual results were obtained
+    if resp_json["tracks"]["total"] == 0:
+        print("No results were found for query:", "'" + " ".join(args) + "'")
+        return
 
     to_print = []
-    for item in resp.json()["tracks"]["items"]:
+    for item in resp_json["tracks"]["items"]:
         song = item["name"]
         artist = item["artists"][0]["name"]
         album = item["album"]["name"]
@@ -426,8 +433,14 @@ def quickplay(option, *args):
         print(exception)
         sys.exit(1)
 
+    # assert that actual results were obtained
+    resp_json = resp.json()
+    if resp_json[search_type + "s"]["total"] == 0:
+        print("No results were found for query:", "'" + " ".join(args) + "'")
+        return
+
     # get and play the uri of the top result of the search
-    uri = resp.json()[search_type + "s"]["items"][0]["uri"]
+    uri = resp_json[search_type + "s"]["items"][0]["uri"]
     if search_type == "track":
         json_body_data = json.dumps({"uris": [uri]})
     else:
