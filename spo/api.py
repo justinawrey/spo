@@ -4,6 +4,7 @@ import os
 import webbrowser
 import time
 import sys
+import json
 
 # external packages
 import requests
@@ -153,6 +154,9 @@ def replay():
         print(exception)
         sys.exit(1)
 
+    # show what is now playing
+    curr_song()
+
 
 def pause():
     """
@@ -174,8 +178,6 @@ def shuffle(on_off):
         :param on_off {bool}: whether to set shuffle mode to on or off
     """
     access_token = get_tokens()["access_token"]
-
-    print(str(on_off).lower())
 
     try:
         requests.put("https://api.spotify.com/v1/me/player/shuffle",
@@ -257,6 +259,11 @@ def prev_song():
         print(exception)
         sys.exit(1)
 
+    # display which song is now playing - allow a short delay for player to begin
+    # playing prev song before polling song for its metadata
+    time.sleep(0.25)
+    curr_song()
+
 
 def next_song():
     """
@@ -270,6 +277,11 @@ def next_song():
     except requests.exceptions.RequestException as exception:
         print(exception)
         sys.exit(1)
+
+    # display which song is now playing - allow a short delay for player to begin
+    # playing next song before polling song for its metadata
+    time.sleep(0.25)
+    curr_song()
 
 
 def save():
@@ -289,9 +301,9 @@ def save():
 
     # save currently playing song to my music
     try:
-        print(requests.put("https://api.spotify.com/v1/me/tracks",
+        requests.put("https://api.spotify.com/v1/me/tracks",
                            params={"ids": track_id},
-                           headers={"Authorization": "Bearer " + access_token}))
+                           headers={"Authorization": "Bearer " + access_token})
     except requests.exceptions.RequestException as exception:
         print(exception)
         sys.exit(1)
@@ -365,7 +377,6 @@ def search(amt, *args):
         :param amt=5 {int}: amount of results to show
         :param *args {[string]}: search terms to search with
     """
-
     access_token = get_tokens()["access_token"]
 
     try:
@@ -385,3 +396,53 @@ def search(amt, *args):
         to_print.append([song, artist, album])
 
     print_table(to_print)
+
+
+def quickplay(option, *args):
+    """
+    Quickplay a song/artist/album based on search terms.
+        :param option {string}:
+            song - quickplay track
+            artist - quickplay artist
+            album - quickplay album
+        :param *args {[string]}: search terms to search with
+    """
+    access_token = get_tokens()["access_token"]
+
+    # we would like to use the key "song" for quickplay song - spotify API uses "track"
+    # ...compensate here
+    if option == "song":
+        search_type = "track"
+    else:
+        search_type = option
+
+    # search spotify based on provided search arguments and search type
+    try:
+        resp = requests.get("https://api.spotify.com/v1/search",
+                            params={"q": "+".join(args), "type": search_type,
+                                    "limit": "1"},
+                            headers={"Authorization": "Bearer " + access_token})
+    except requests.exceptions.RequestException as exception:
+        print(exception)
+        sys.exit(1)
+
+    # get and play the uri of the top result of the search
+    uri = resp.json()[search_type + "s"]["items"][0]["uri"]
+    if search_type == "track":
+        json_body_data = json.dumps({"uris": [uri]})
+    else:
+        json_body_data = json.dumps({"context_uri": uri})
+
+    try:
+        resp = requests.put("https://api.spotify.com/v1/me/player/play",
+                            headers={
+                                "Authorization": "Bearer " + access_token},
+                            data=json_body_data)
+    except requests.exceptions.RequestException as exception:
+        print(exception)
+        sys.exit(1)
+
+    # display which song is now playing - allow a short delay for player to begin
+    # playing selected song before polling song for its metadata
+    time.sleep(0.25)
+    curr_song()
