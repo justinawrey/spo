@@ -45,14 +45,11 @@ def refresh_tokens(refresh_token):
         :param refresh_token {string}: refresh token for spotify api
     """
 
-    try:
-        resp = requests.post("https://accounts.spotify.com/api/token",
-                             data={"grant_type": "refresh_token",
-                                   "refresh_token": refresh_token},
-                             auth=(CLIENT_ID, CLIENT_SECRET))
-    except requests.exceptions.RequestException as exception:
-        print(exception)
-        sys.exit(1)
+    resp = requests.post("https://accounts.spotify.com/api/token",
+                         data={"grant_type": "refresh_token",
+                               "refresh_token": refresh_token},
+                         auth=(CLIENT_ID, CLIENT_SECRET))
+    resp.raise_for_status()
 
     # pickle refreshed information
     resp_json = resp.json()
@@ -93,15 +90,12 @@ def authenticate():
         return
 
     # application requests access tokens and refresh tokens
-    try:
-        resp = requests.post("https://accounts.spotify.com/api/token",
-                             data={"grant_type": "authorization_code",
-                                   "redirect_uri": REDIRECT_URI,
-                                   "code": auth_code},
-                             auth=(CLIENT_ID, CLIENT_SECRET))
-    except requests.exceptions.RequestException as exception:
-        print(exception)
-        sys.exit(1)
+    resp = requests.post("https://accounts.spotify.com/api/token",
+                         data={"grant_type": "authorization_code",
+                               "redirect_uri": REDIRECT_URI,
+                               "code": auth_code},
+                         auth=(CLIENT_ID, CLIENT_SECRET))
+    resp.raise_for_status()
 
     # pickle tokens so user does not have to re-authenticate
     resp_json = resp.json()
@@ -119,50 +113,43 @@ def curr_song():
     """
     Shows currently playing song.
     """
+
     access_token = get_tokens()["access_token"]
+    resp = requests.get("https://api.spotify.com/v1/me/player/currently-playing",
+                        headers={"Authorization": "Bearer " + access_token})
+    resp.raise_for_status()
 
-    try:
-        resp = requests.get("https://api.spotify.com/v1/me/player/currently-playing",
-                            headers={"Authorization": "Bearer " + access_token})
-    except requests.exceptions.RequestException as exception:
-        print(exception)
-        sys.exit(1)
+    # returns no payload if no sort of spotify client is open
+    if resp.text:
+        resp_json = resp.json()
+        song = resp_json["item"]["name"]
+        artist = resp_json["item"]["artists"][0]["name"]
+        album = resp_json["item"]["album"]["name"]
 
-    resp_json = resp.json()
-    song = resp_json["item"]["name"]
-    artist = resp_json["item"]["artists"][0]["name"]
-    album = resp_json["item"]["album"]["name"]
-
-    print_table([[song, artist, album]])
+        print_table([[song, artist, album]])
 
 
 def play():
     """
     Plays current song.
     """
-    access_token = get_tokens()["access_token"]
 
-    try:
-        requests.put("https://api.spotify.com/v1/me/player/play",
-                     headers={"Authorization": "Bearer " + access_token})
-    except requests.exceptions.RequestException as exception:
-        print(exception)
-        sys.exit(1)
+    access_token = get_tokens()["access_token"]
+    resp = requests.put("https://api.spotify.com/v1/me/player/play",
+                        headers={"Authorization": "Bearer " + access_token})
+    resp.raise_for_status()
 
 
 def replay():
     """
     Replays current song.
     """
-    access_token = get_tokens()["access_token"]
 
-    try:
-        requests.put("https://api.spotify.com/v1/me/player/seek",
-                     params={"position_ms": "1"},
-                     headers={"Authorization": "Bearer " + access_token})
-    except requests.exceptions.RequestException as exception:
-        print(exception)
-        sys.exit(1)
+    access_token = get_tokens()["access_token"]
+    resp = requests.put("https://api.spotify.com/v1/me/player/seek",
+                        params={"position_ms": "1"},
+                        headers={"Authorization": "Bearer " + access_token})
+    resp.raise_for_status()
 
     # show what is now playing
     curr_song()
@@ -172,14 +159,11 @@ def pause():
     """
     Pauses current song.
     """
-    access_token = get_tokens()["access_token"]
 
-    try:
-        requests.put("https://api.spotify.com/v1/me/player/pause",
-                     headers={"Authorization": "Bearer " + access_token})
-    except requests.exceptions.RequestException as exception:
-        print(exception)
-        sys.exit(1)
+    access_token = get_tokens()["access_token"]
+    resp = requests.put("https://api.spotify.com/v1/me/player/pause",
+                        headers={"Authorization": "Bearer " + access_token})
+    resp.raise_for_status()
 
 
 def shuffle(on_off):
@@ -187,15 +171,12 @@ def shuffle(on_off):
     Turn shuffle mode on or off.
         :param on_off {bool}: whether to set shuffle mode to on or off
     """
-    access_token = get_tokens()["access_token"]
 
-    try:
-        requests.put("https://api.spotify.com/v1/me/player/shuffle",
-                     params={"state": str(on_off).lower()},
-                     headers={"Authorization": "Bearer " + access_token})
-    except requests.exceptions.RequestException as exception:
-        print(exception)
-        sys.exit(1)
+    access_token = get_tokens()["access_token"]
+    resp = requests.put("https://api.spotify.com/v1/me/player/shuffle",
+                        params={"state": str(on_off).lower()},
+                        headers={"Authorization": "Bearer " + access_token})
+    resp.raise_for_status()
 
 
 def repeat(on_off):
@@ -203,20 +184,17 @@ def repeat(on_off):
     Turn repeat mode on or off.
         :param on_off {bool}: whether to set repeat mode to on or off
     """
-    access_token = get_tokens()["access_token"]
 
+    access_token = get_tokens()["access_token"]
     if on_off:
         query_val = "track"
     else:
         query_val = "off"
 
-    try:
-        requests.put("https://api.spotify.com/v1/me/player/repeat",
-                     params={"state": query_val},
-                     headers={"Authorization": "Bearer " + access_token})
-    except requests.exceptions.RequestException as exception:
-        print(exception)
-        sys.exit(1)
+    resp = requests.put("https://api.spotify.com/v1/me/player/repeat",
+                        params={"state": query_val},
+                        headers={"Authorization": "Bearer " + access_token})
+    resp.raise_for_status()
 
 
 def volume(up_down, amt):
@@ -225,15 +203,13 @@ def volume(up_down, amt):
         :param up_down {bool}: whether to turn the volume up or down
         :param amt {int}: percentage by which to tweak volume (must be nonneg)
     """
+
     access_token = get_tokens()["access_token"]
 
     # first get curr volume
-    try:
-        resp = requests.get("https://api.spotify.com/v1/me/player",
-                            headers={"Authorization": "Bearer " + access_token})
-    except requests.exceptions.RequestException as exception:
-        print(exception)
-        sys.exit(1)
+    resp = requests.get("https://api.spotify.com/v1/me/player",
+                        headers={"Authorization": "Bearer " + access_token})
+    resp.raise_for_status()
     vol = int(resp.json()["device"]["volume_percent"])
 
     # compute new volume
@@ -247,27 +223,21 @@ def volume(up_down, amt):
             adjusted_vol = 0
 
     # tweak volume
-    try:
-        requests.put("https://api.spotify.com/v1/me/player/volume",
-                     params={"volume_percent": str(adjusted_vol)},
-                     headers={"Authorization": "Bearer " + access_token})
-    except requests.exceptions.RequestException as exception:
-        print(exception)
-        sys.exit(1)
+    resp = requests.put("https://api.spotify.com/v1/me/player/volume",
+                        params={"volume_percent": str(adjusted_vol)},
+                        headers={"Authorization": "Bearer " + access_token})
+    resp.raise_for_status()
 
 
 def prev_song():
     """
     Plays the previous song.
     """
-    access_token = get_tokens()["access_token"]
 
-    try:
-        requests.post("https://api.spotify.com/v1/me/player/previous",
-                      headers={"Authorization": "Bearer " + access_token})
-    except requests.exceptions.RequestException as exception:
-        print(exception)
-        sys.exit(1)
+    access_token = get_tokens()["access_token"]
+    resp = requests.post("https://api.spotify.com/v1/me/player/previous",
+                         headers={"Authorization": "Bearer " + access_token})
+    resp.raise_for_status()
 
     # display which song is now playing - allow a short delay for player to begin
     # playing prev song before polling song for its metadata
@@ -279,14 +249,11 @@ def next_song():
     """
     Plays the next song.
     """
-    access_token = get_tokens()["access_token"]
 
-    try:
-        requests.post("https://api.spotify.com/v1/me/player/next",
-                      headers={"Authorization": "Bearer " + access_token})
-    except requests.exceptions.RequestException as exception:
-        print(exception)
-        sys.exit(1)
+    access_token = get_tokens()["access_token"]
+    resp = requests.post("https://api.spotify.com/v1/me/player/next",
+                         headers={"Authorization": "Bearer " + access_token})
+    resp.raise_for_status()
 
     # display which song is now playing - allow a short delay for player to begin
     # playing next song before polling song for its metadata
@@ -298,50 +265,40 @@ def save():
     """
     Saves current song to my music.
     """
+
     access_token = get_tokens()["access_token"]
 
     # get id of currently playing song
-    try:
-        resp = requests.get("https://api.spotify.com/v1/me/player/currently-playing",
-                            headers={"Authorization": "Bearer " + access_token})
-    except requests.exceptions.RequestException as exception:
-        print(exception)
-        sys.exit(1)
+    resp = requests.get("https://api.spotify.com/v1/me/player/currently-playing",
+                        headers={"Authorization": "Bearer " + access_token})
+    resp.raise_for_status()
     track_id = resp.json()["item"]["id"]
 
     # save currently playing song to my music
-    try:
-        requests.put("https://api.spotify.com/v1/me/tracks",
-                     params={"ids": track_id},
-                     headers={"Authorization": "Bearer " + access_token})
-    except requests.exceptions.RequestException as exception:
-        print(exception)
-        sys.exit(1)
+    resp = requests.put("https://api.spotify.com/v1/me/tracks",
+                        params={"ids": track_id},
+                        headers={"Authorization": "Bearer " + access_token})
+    resp.raise_for_status()
 
 
 def delete():
     """
     Deletes current song from my music.
     """
+
     access_token = get_tokens()["access_token"]
 
     # get id of currently playing song
-    try:
-        resp = requests.get("https://api.spotify.com/v1/me/player/currently-playing",
-                            headers={"Authorization": "Bearer " + access_token})
-    except requests.exceptions.RequestException as exception:
-        print(exception)
-        sys.exit(1)
+    resp = requests.get("https://api.spotify.com/v1/me/player/currently-playing",
+                        headers={"Authorization": "Bearer " + access_token})
+    resp.raise_for_status()
     track_id = resp.json()["item"]["id"]
 
     # delete currently playing song from my music
-    try:
-        requests.delete("https://api.spotify.com/v1/me/tracks",
-                        params={"ids": track_id},
-                        headers={"Authorization": "Bearer " + access_token})
-    except requests.exceptions.RequestException as exception:
-        print(exception)
-        sys.exit(1)
+    requests.delete("https://api.spotify.com/v1/me/tracks",
+                    params={"ids": track_id},
+                    headers={"Authorization": "Bearer " + access_token})
+    resp.raise_for_status()
 
 
 def recent(num):
@@ -350,17 +307,15 @@ def recent(num):
     displayed table and select a song.
         :param num {int}: number of recently played songs to display
     """
+
     access_token = get_tokens()["access_token"]
 
-    # this endpoint does not supply album names...
+    # this endpoint does not supply album names so we must make a request to manually get them
     # get recently played songs
-    try:
-        resp = requests.get("https://api.spotify.com/v1/me/player/recently-played",
-                            params={"limit": str(num)},
-                            headers={"Authorization": "Bearer " + access_token})
-    except requests.exceptions.RequestException as exception:
-        print(exception)
-        sys.exit(1)
+    resp = requests.get("https://api.spotify.com/v1/me/player/recently-played",
+                        params={"limit": str(num)},
+                        headers={"Authorization": "Bearer " + access_token})
+    resp.raise_for_status()
 
     # assert that user has recently played songs
     if len(resp.json()["items"]) == 0:
@@ -373,17 +328,14 @@ def recent(num):
         song = item["track"]["name"]
         artist = item["track"]["artists"][0]["name"]
         uri = item["track"]["uri"]
-        track_id = item["track"]["id"]  # used to retrieve album name
+        track_id = item["track"]["id"]
 
         # retrieve album name
-        try:
-            resp = requests.get("https://api.spotify.com/v1/tracks/" + track_id,
-                                headers={"Authorization": "Bearer " + access_token})
-        except requests.exceptions.RequestException as exception:
-            print(exception)
-            sys.exit(1)
-
+        resp = requests.get("https://api.spotify.com/v1/tracks/" + track_id,
+                            headers={"Authorization": "Bearer " + access_token})
+        resp.raise_for_status()
         album = resp.json()["album"]["name"]
+
         to_print.append([song, artist, album, uri])
 
     # print an interactive table with data we have just collected
@@ -394,15 +346,13 @@ def recent(num):
         user_selection_uri = user_selection[0]
         user_selection_row = user_selection[1]
         json_body_data = json.dumps({"uris": [user_selection_uri]})
-        try:
-            resp = requests.put("https://api.spotify.com/v1/me/player/play",
-                                headers={
-                                    "Authorization": "Bearer " + access_token},
-                                data=json_body_data)
-        except requests.exceptions.RequestException as exception:
-            print(exception)
-            sys.exit(1)
-        
+
+        resp = requests.put("https://api.spotify.com/v1/me/player/play",
+                            headers={
+                                "Authorization": "Bearer " + access_token},
+                            data=json_body_data)
+        resp.raise_for_status()
+
         # display what we are now playing
         print_table([to_print[user_selection_row]])
 
@@ -415,21 +365,18 @@ def search(amt, *args):
         :param amt=5 {int}: amount of results to show
         :param *args {[string]}: search terms to search with
     """
+
     access_token = get_tokens()["access_token"]
 
     # search songs based on search criteria
-    try:
-        resp = requests.get("https://api.spotify.com/v1/search",
-                            params={"q": "+".join(args), "type": "track",
-                                    "limit": str(amt)},
-                            headers={"Authorization": "Bearer " + access_token})
-    except requests.exceptions.RequestException as exception:
-        print(exception)
-        sys.exit(1)
-
-    resp_json = resp.json()
+    resp = requests.get("https://api.spotify.com/v1/search",
+                        params={"q": "+".join(args), "type": "track",
+                                "limit": str(amt)},
+                        headers={"Authorization": "Bearer " + access_token})
+    resp.raise_for_status()
 
     # assert that actual results were obtained
+    resp_json = resp.json()
     if resp_json["tracks"]["total"] == 0:
         print("No results were found for query:", "'" + " ".join(args) + "'")
         return
@@ -446,20 +393,17 @@ def search(amt, *args):
     # print an interactive table with data we have just collected
     user_selection = print_table(to_print, 0, True)
 
+    # play the song user selected
     if user_selection:
         user_selection_uri = user_selection[0]
-        user_selection_row = user_selection[1]  
+        user_selection_row = user_selection[1]
         json_body_data = json.dumps({"uris": [user_selection_uri]})
 
-        # play the song user selected
-        try:
-            resp = requests.put("https://api.spotify.com/v1/me/player/play",
-                                headers={
-                                    "Authorization": "Bearer " + access_token},
-                                data=json_body_data)
-        except requests.exceptions.RequestException as exception:
-            print(exception)
-            sys.exit(1)
+        resp = requests.put("https://api.spotify.com/v1/me/player/play",
+                            headers={
+                                "Authorization": "Bearer " + access_token},
+                            data=json_body_data)
+        resp.raise_for_status()
 
         # print the song we are now playing
         print_table([to_print[user_selection_row]])
@@ -474,6 +418,7 @@ def quickplay(option, *args):
             album - quickplay album
         :param *args {[string]}: search terms to search with
     """
+
     access_token = get_tokens()["access_token"]
 
     # we would like to use the key "song" for quickplay song - spotify API uses "track"
@@ -483,15 +428,12 @@ def quickplay(option, *args):
     else:
         search_type = option
 
-    # search spotify based on provided search arguments and search type
-    try:
-        resp = requests.get("https://api.spotify.com/v1/search",
-                            params={"q": "+".join(args), "type": search_type,
-                                    "limit": "1"},
-                            headers={"Authorization": "Bearer " + access_token})
-    except requests.exceptions.RequestException as exception:
-        print(exception)
-        sys.exit(1)
+    # search spotify based on provided search arguments and search type:
+    resp = requests.get("https://api.spotify.com/v1/search",
+                        params={"q": "+".join(args), "type": search_type,
+                                "limit": "1"},
+                        headers={"Authorization": "Bearer " + access_token})
+    resp.raise_for_status()
 
     # assert that actual results were obtained
     resp_json = resp.json()
@@ -506,14 +448,11 @@ def quickplay(option, *args):
     else:
         json_body_data = json.dumps({"context_uri": uri})
 
-    try:
-        resp = requests.put("https://api.spotify.com/v1/me/player/play",
-                            headers={
-                                "Authorization": "Bearer " + access_token},
-                            data=json_body_data)
-    except requests.exceptions.RequestException as exception:
-        print(exception)
-        sys.exit(1)
+    resp = requests.put("https://api.spotify.com/v1/me/player/play",
+                        headers={
+                            "Authorization": "Bearer " + access_token},
+                        data=json_body_data)
+    resp.raise_for_status()
 
     # display which song is now playing - allow a short delay for player to begin
     # playing selected song before polling song for its metadata
