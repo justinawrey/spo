@@ -352,7 +352,8 @@ def recent(num):
     """
     access_token = get_tokens()["access_token"]
 
-    # this endpoint does not supply album names
+    # this endpoint does not supply album names...
+    # get recently played songs
     try:
         resp = requests.get("https://api.spotify.com/v1/me/player/recently-played",
                             params={"limit": str(num)},
@@ -361,6 +362,12 @@ def recent(num):
         print(exception)
         sys.exit(1)
 
+    # assert that user has recently played songs
+    if resp.json()["tracks"]["total"] == 0:
+        print("No recently played songs")
+        return
+
+    # collect data about recently played songs for printing
     to_print = []
     for item in resp.json()["items"]:
         song = item["track"]["name"]
@@ -379,9 +386,14 @@ def recent(num):
         album = resp.json()["album"]["name"]
         to_print.append([song, artist, album, uri])
 
+    # print an interactive table with data we have just collected
     user_selection = print_table(to_print, 0, True)
+    user_selection_uri = user_selection[0]
+    user_selection_row = user_selection[1]
+
+    # play the song user selected
     if user_selection:
-        json_body_data = json.dumps({"uris": [user_selection[0]]})
+        json_body_data = json.dumps({"uris": [user_selection_uri]})
         try:
             resp = requests.put("https://api.spotify.com/v1/me/player/play",
                                 headers={
@@ -390,7 +402,9 @@ def recent(num):
         except requests.exceptions.RequestException as exception:
             print(exception)
             sys.exit(1)
-        print_table([to_print[user_selection[1]]])
+        
+        # display what we are now playing
+        print_table([to_print[user_selection_row]])
 
 
 def search(amt, *args):
@@ -403,6 +417,7 @@ def search(amt, *args):
     """
     access_token = get_tokens()["access_token"]
 
+    # search songs based on search criteria
     try:
         resp = requests.get("https://api.spotify.com/v1/search",
                             params={"q": "+".join(args), "type": "track",
@@ -419,6 +434,7 @@ def search(amt, *args):
         print("No results were found for query:", "'" + " ".join(args) + "'")
         return
 
+    # collect data about recently played songs for printing
     to_print = []
     for item in resp_json["tracks"]["items"]:
         song = item["name"]
@@ -427,9 +443,15 @@ def search(amt, *args):
         uri = item["uri"]
         to_print.append([song, artist, album, uri])
 
+    # print an interactive table with data we have just collected
     user_selection = print_table(to_print, 0, True)
+    user_selection_uri = user_selection[0]
+    user_selection_row = user_selection[1]
+
     if user_selection:
-        json_body_data = json.dumps({"uris": [user_selection[0]]})
+        json_body_data = json.dumps({"uris": [user_selection_uri]})
+
+        # play the song user selected
         try:
             resp = requests.put("https://api.spotify.com/v1/me/player/play",
                                 headers={
@@ -438,7 +460,9 @@ def search(amt, *args):
         except requests.exceptions.RequestException as exception:
             print(exception)
             sys.exit(1)
-        print_table([to_print[user_selection[1]]])
+
+        # print the song we are now playing
+        print_table([to_print[user_selection_row]])
 
 
 def quickplay(option, *args):

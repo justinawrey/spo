@@ -36,9 +36,9 @@ def print_table(input_data, highlight_row=None, interactive=False):
                                     Interactive mode causes printing to always be started
                                     from the top-left corner of the terminal.
                                     If interactive mode is turned on, this function
-                                    returns either the tuple (uri, highlighted_row) of the selected track when
-                                    user makes a selection in the table, or None when user
-                                    exits without making a selection.
+                                    returns either the tuple (uri, highlighted_row) of the
+                                    selected track when user makes a selection in the table,
+                                    or None when user exits without making a selection.
 
     """
 
@@ -84,7 +84,7 @@ def print_table(input_data, highlight_row=None, interactive=False):
         print_user_controls()
         user_input = poll_for_user_input()
 
-        if user_input == ANSI_ESC:
+        if user_input == ANSI_ESC or user_input == 'q':
             clear_and_move_cursor_up(last_print_size)
 
         elif user_input == ANSI_ENTER:
@@ -92,14 +92,14 @@ def print_table(input_data, highlight_row=None, interactive=False):
             selected_uri = (input_data[highlight_row][3], highlight_row)
             return selected_uri
 
-        elif user_input == 'k' or user_input == ANSI_MOVE_CURSOR_UP:
+        elif user_input == 'k':
             clear_and_move_cursor_up(last_print_size)
             if highlight_row > 0:
                 return print_table(input_data, highlight_row - 1, True)
             else:
                 return print_table(input_data, highlight_row, True)
 
-        elif user_input == 'j' or user_input == ANSI_MOVE_CURSOR_DOWN:
+        elif user_input == 'j':
             clear_and_move_cursor_up(last_print_size)
             if highlight_row < len(input_data) - 1:
                 return print_table(input_data, highlight_row + 1, True)
@@ -113,14 +113,14 @@ def print_table(input_data, highlight_row=None, interactive=False):
 
 def print_user_controls():
     """
-    Prints a nice message containing user controls for 
+    Prints a nice message containing user controls for
     navigating the interactive table printed in print_table.
     """
     print("")
-    print(" scroll up   : <k> or \u2191")
-    print(" scroll down : <j> or \u2193")
+    print(" scroll up   : <k>")
+    print(" scroll down : <j>")
     print(" select      : <enter>")
-    print(" quit        : <esc>")
+    print(" quit        : <q> or <esc>")
     print("")
 
 
