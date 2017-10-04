@@ -388,11 +388,11 @@ def recent(num):
 
     # print an interactive table with data we have just collected
     user_selection = print_table(to_print, 0, True)
-    user_selection_uri = user_selection[0]
-    user_selection_row = user_selection[1]
 
     # play the song user selected
     if user_selection:
+        user_selection_uri = user_selection[0]
+        user_selection_row = user_selection[1]
         json_body_data = json.dumps({"uris": [user_selection_uri]})
         try:
             resp = requests.put("https://api.spotify.com/v1/me/player/play",
@@ -445,10 +445,10 @@ def search(amt, *args):
 
     # print an interactive table with data we have just collected
     user_selection = print_table(to_print, 0, True)
-    user_selection_uri = user_selection[0]
-    user_selection_row = user_selection[1]
 
     if user_selection:
+        user_selection_uri = user_selection[0]
+        user_selection_row = user_selection[1]  
         json_body_data = json.dumps({"uris": [user_selection_uri]})
 
         # play the song user selected

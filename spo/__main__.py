@@ -22,12 +22,12 @@ Options:
   song <search-terms>               quickplay song
   artist <search-terms>             quickplay artist
   album <search-terms>              quickplay album
-  search <search-terms> --num NUM   do keyword search and navigate through best matches [default: 5]
+  search <search-terms> --num NUM   do keyword search and navigate through best matches [default: 10]
   recent --num NUM                  show and navigate through recently played songs [default: 10]
   shuffle (on | off)                turn shuffle mode on or off
   repeat (on | off)                 turn repeat mode on or off
   vol (up | down) <amt>             tweak spotify client volume up/down by amt (0-100)
-  -n NUM --num NUM                  number of search/recently played results to display [default: 5]
+  -n NUM --num NUM                  number of search/recently played results to display [default: 10]
   -h --help                         show this help message
   -v --version                      show version
 
