@@ -346,7 +346,8 @@ def delete():
 
 def recent(num):
     """
-    Display recently played songs.
+    Display recently played songs.  User can navigate through the
+    displayed table and select a song.
         :param num {int}: number of recently played songs to display
     """
     access_token = get_tokens()["access_token"]
@@ -364,6 +365,7 @@ def recent(num):
     for item in resp.json()["items"]:
         song = item["track"]["name"]
         artist = item["track"]["artists"][0]["name"]
+        uri = item["track"]["uri"]
         track_id = item["track"]["id"]  # used to retrieve album name
 
         # retrieve album name
@@ -375,15 +377,27 @@ def recent(num):
             sys.exit(1)
 
         album = resp.json()["album"]["name"]
-        to_print.append([song, artist, album])
+        to_print.append([song, artist, album, uri])
 
-    print_table(to_print)
+    user_selection = print_table(to_print, 0, True)
+    if user_selection:
+        json_body_data = json.dumps({"uris": [user_selection[0]]})
+        try:
+            resp = requests.put("https://api.spotify.com/v1/me/player/play",
+                                headers={
+                                    "Authorization": "Bearer " + access_token},
+                                data=json_body_data)
+        except requests.exceptions.RequestException as exception:
+            print(exception)
+            sys.exit(1)
+        print_table([to_print[user_selection[1]]])
 
 
 def search(amt, *args):
     """
     Searches for a song via search terms and lists a table of
-    size 'amt' containing search results.
+    size 'amt' containing search results.  User can navigate the
+    table and select a song.
         :param amt=5 {int}: amount of results to show
         :param *args {[string]}: search terms to search with
     """
@@ -410,9 +424,21 @@ def search(amt, *args):
         song = item["name"]
         artist = item["artists"][0]["name"]
         album = item["album"]["name"]
-        to_print.append([song, artist, album])
+        uri = item["uri"]
+        to_print.append([song, artist, album, uri])
 
-    print_table(to_print, 0, True)
+    user_selection = print_table(to_print, 0, True)
+    if user_selection:
+        json_body_data = json.dumps({"uris": [user_selection[0]]})
+        try:
+            resp = requests.put("https://api.spotify.com/v1/me/player/play",
+                                headers={
+                                    "Authorization": "Bearer " + access_token},
+                                data=json_body_data)
+        except requests.exceptions.RequestException as exception:
+            print(exception)
+            sys.exit(1)
+        print_table([to_print[user_selection[1]]])
 
 
 def quickplay(option, *args):

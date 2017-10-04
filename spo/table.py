@@ -13,7 +13,7 @@ ANSI_ESC = "\x1b"
 ANSI_CLEAR_LINE = "\x1b[2K"
 
 
-def print_table(input_data, highlight_row=None, reprint_mode=False):
+def print_table(input_data, highlight_row=None, interactive=False):
     """
     Prints a table of items having the format -
 
@@ -24,15 +24,21 @@ def print_table(input_data, highlight_row=None, reprint_mode=False):
     | I Miss You | Blink-182   | Blink-182                         |
     ================================================================
 
-        :param input_data {[string][string]}: A 2D array containing
-        the data to be pretty printed. Width of 2D array must be 3.
+        :param input_data {[[string]]}: A 2D array containing
+        the data to be pretty printed. Width of 2D array must be 4. Each row
+        in the 2D array must be of the form [song, artist, album, uri].
+        The uri column is not printed in the table.
         The first row (SONG, ARTIST, ALBUM) is automatically pre-pended
         to the displayed table.
         :param highlight_row {int}: row number of 2d array to be highlighted,
                                     highlight=None -> no highlighting (0-indexed)
-        "param reprint_mode {bool}: whether to turn on reprint mode or not.
-                                    Reprint mode causes printing to always be started
+        :param interactive {bool}:  whether to turn on interactive mode or not.
+                                    Interactive mode causes printing to always be started
                                     from the top-left corner of the terminal.
+                                    If interactive mode is turned on, this function
+                                    returns either the tuple (uri, highlighted_row) of the selected track when
+                                    user makes a selection in the table, or None when user
+                                    exits without making a selection.
 
     """
 
@@ -71,7 +77,7 @@ def print_table(input_data, highlight_row=None, reprint_mode=False):
     _ = [print('=' * (col + 3), end='') for col in col_widths]
     print('=')
 
-    if reprint_mode:
+    if interactive:
         # number of song data rows printed + number of extra pretty printing rows +
         # number of rows printed for user controls
         last_print_size = len(input_data) + 4 + 6
@@ -83,27 +89,33 @@ def print_table(input_data, highlight_row=None, reprint_mode=False):
 
         elif user_input == ANSI_ENTER:
             clear_and_move_cursor_up(last_print_size)
+            selected_uri = (input_data[highlight_row][3], highlight_row)
+            return selected_uri
 
-        elif user_input == 'k' or  user_input == ANSI_MOVE_CURSOR_UP:
+        elif user_input == 'k' or user_input == ANSI_MOVE_CURSOR_UP:
             clear_and_move_cursor_up(last_print_size)
             if highlight_row > 0:
-                print_table(input_data, highlight_row - 1, True)
+                return print_table(input_data, highlight_row - 1, True)
             else:
-                print_table(input_data, highlight_row, True)
+                return print_table(input_data, highlight_row, True)
 
-        elif user_input == 'j' or  user_input == ANSI_MOVE_CURSOR_DOWN:
+        elif user_input == 'j' or user_input == ANSI_MOVE_CURSOR_DOWN:
             clear_and_move_cursor_up(last_print_size)
             if highlight_row < len(input_data) - 1:
-                print_table(input_data, highlight_row + 1, True)
+                return print_table(input_data, highlight_row + 1, True)
             else:
-                print_table(input_data, highlight_row, True)
+                return print_table(input_data, highlight_row, True)
 
         else:
             clear_and_move_cursor_up(last_print_size)
-            print_table(input_data, highlight_row, True)
+            return print_table(input_data, highlight_row, True)
 
 
 def print_user_controls():
+    """
+    Prints a nice message containing user controls for 
+    navigating the interactive table printed in print_table.
+    """
     print("")
     print(" scroll up   : <k> or \u2191")
     print(" scroll down : <j> or \u2193")
@@ -113,6 +125,12 @@ def print_user_controls():
 
 
 def clear_and_move_cursor_up(num):
+    """
+    Clears 'num' rows above current cursor placement.
+    Cursor is never changed horizontally, but finishes
+    'num' rows above its previous position.
+        :param num {int}: the number of rows to clear
+    """
     for _ in range(num):
         sys.stdout.write(ANSI_MOVE_CURSOR_UP)
         sys.stdout.write(ANSI_CLEAR_LINE)
@@ -120,5 +138,9 @@ def clear_and_move_cursor_up(num):
 
 
 def poll_for_user_input():
+    """
+    Poll keyboard for user input.  Blocks until input is recieved,
+    as does not wait for a carriage return.
+    """
     getch = _Getch()
     return getch()

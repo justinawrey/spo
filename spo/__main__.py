@@ -101,11 +101,17 @@ def main():
     elif args["search"]:
         search_terms = args["<search-terms>"]
         search_amt = args["--num"]
-        search(search_amt, *search_terms)
+        if int(search_amt) >= 1 and int(search_amt) <= 50:
+            search(search_amt, *search_terms)
+        else:
+            print("Optional argument --num must be in range [1,50]")
 
     elif args["recent"]:
         search_amt = args["--num"]
-        recent(search_amt)
+        if int(search_amt) >= 1 and int(search_amt) <= 50:
+            recent(search_amt)
+        else:
+            print("Optional argument --num must be in range [1,50]")
 
     elif args["vol"]:
         tweak_amt = int(args["<amt>"])
