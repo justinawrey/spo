@@ -310,7 +310,6 @@ def recent(num):
 
     access_token = get_tokens()["access_token"]
 
-    # this endpoint does not supply album names so we must make a request to manually get them
     # get recently played songs
     resp = requests.get("https://api.spotify.com/v1/me/player/recently-played",
                         params={"limit": str(num)},
@@ -327,14 +326,8 @@ def recent(num):
     for item in resp.json()["items"]:
         song = item["track"]["name"]
         artist = item["track"]["artists"][0]["name"]
+        album = item["track"]["album"]["name"]
         uri = item["track"]["uri"]
-        track_id = item["track"]["id"]
-
-        # retrieve album name
-        resp = requests.get("https://api.spotify.com/v1/tracks/" + track_id,
-                            headers={"Authorization": "Bearer " + access_token})
-        resp.raise_for_status()
-        album = resp.json()["album"]["name"]
 
         to_print.append([song, artist, album, uri])
 
