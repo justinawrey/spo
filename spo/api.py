@@ -363,7 +363,7 @@ def recent(num):
         sys.exit(1)
 
     # assert that user has recently played songs
-    if resp.json()["tracks"]["total"] == 0:
+    if len(resp.json()["items"]) == 0:
         print("No recently played songs")
         return
 
